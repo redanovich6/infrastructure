@@ -7,14 +7,12 @@ LABEL version="1.0" \
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 #------------------------------------------------------------------------------
-# Install path for sostrades sources
+# Install path for sostrades 
 RUN mkdir /usr/local/sostrades
-WORKDIR /usr/local/sostrades/
-ENV SOSTRADES_REPO_PATH=/usr/local/sostrades/
 
 #------------------------------------------------------------------------------
-# Install path for tools
-RUN mkdir /usr/local/sostrades-tools
+# Install path for sources
+RUN mkdir /usr/local/sostrades/sources
 
 #------------------------------------------------------------------------------
 # Update source.list
@@ -22,19 +20,35 @@ RUN echo "deb http://deb.debian.org/debian buster main" | tee -a /etc/apt/source
 
 #------------------------------------------------------------------------------
 # Install Prerequisites
-RUN apt-get update --fix-missing && \
-    apt-get install -y wget bzip2 ca-certificates git vim xmlsec1 libxmlsec1-dev pkg-config gcc default-libmysqlclient-dev build-essential libsasl2-dev python3-dev libldap2-dev libssl-dev procps mpi mpich libblas-dev liblapack-dev unixodbc-dev &&\
+RUN apt-get update -y && apt-get -y upgrade
+RUN apt-get install -y wget bzip2 git vim xmlsec1 libxmlsec1-dev pkg-config gcc default-libmysqlclient-dev build-essential libsasl2-dev python3-dev libldap2-dev libssl-dev procps mpi mpich libblas-dev liblapack-dev unixodbc-dev unixodbc &&\
     apt-get clean
+
 RUN pip install gunicorn numpy pyparsing==2.4.2 python-gitlab kubernetes gitpython  pylint==2.4.2
 
 #------------------------------------------------------------------------------
-# Install Prerequisites for pyodbc
-COPY binaries/msodbcsql17_17.8.1.1-1_amd64.deb /tmp/binaries/
-RUN apt install unixodbc -y
-RUN yes | dpkg -i /tmp/binaries/msodbcsql17_17.8.1.1-1_amd64.deb
+# Extract source code 'sostrades-core' and install python dependencies
+RUN git clone https://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@github.com/os-climate/sostrades-core /usr/local/sostrades/sources/
+WORKDIR  /usr/local/sostrades/sources/sostrades-core
+RUN pip install requirements.txt
 
 #------------------------------------------------------------------------------
-# Extract source code to install python dependencies
+# Extract source code 'sostrades-value-assessment' and install python dependencies
+RUN git clone https://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@github.com/os-climate/sostrades-value-assessment /usr/local/sostrades/sources/
+WORKDIR  /usr/local/sostrades/sources/sostrades-value-assessment
+RUN pip install requirements.txt
+
+#------------------------------------------------------------------------------
+# Extract source code 'sosgemseo' and install python dependencies
+RUN git clone https://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@github.com/os-climate/sosgemseo /usr/local/sostrades/sources/
+WORKDIR  /usr/local/sostrades/sources/sosgemseo
+RUN pip install requirements.txt
+
+#------------------------------------------------------------------------------
+# Extract source code 'sostrades-webapi' and install python dependencies
+RUN git clone https://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@github.com/os-climate/sostrades-webapi /usr/local/sostrades/sources/
+WORKDIR  /usr/local/sostrades/sources/sostrades-webapi
+RUN pip install requirements.txt
 
 EXPOSE 8000
 ENTRYPOINT ["/bin/bash","/startup/commands.sh"]
