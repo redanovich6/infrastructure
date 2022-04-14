@@ -9,7 +9,7 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 #------------------------------------------------------------------------------
 # Install path for sostrades 
 RUN mkdir /usr/local/sostrades
-WORKDIR  /usr/local/sostrades/sources/
+
 #------------------------------------------------------------------------------
 # Install path for sources
 RUN mkdir /usr/local/sostrades/sources
