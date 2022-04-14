@@ -29,7 +29,7 @@ RUN pip install gunicorn numpy pyparsing==2.4.2 python-gitlab kubernetes gitpyth
 
 #------------------------------------------------------------------------------
 # Extract source code 'sostrades-core' and install python dependencies
-RUN git clone https://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@github.com/os-climate/sostrades-core /usr/local/sostrades/sources/
+RUN git clone https://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@github.com/os-climate/sostrades-core /usr/local/sostrades/sources/sostrades-core/
 WORKDIR  /usr/local/sostrades/sources/sostrades-core/
 RUN ls
 RUN cat requirements.txt
