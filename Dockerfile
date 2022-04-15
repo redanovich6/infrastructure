@@ -13,7 +13,6 @@ RUN mkdir /usr/local/sostrades
 #------------------------------------------------------------------------------
 # Install path for sources
 RUN mkdir /usr/local/sostrades/sources
-WORKDIR  /usr/local/sostrades/sources/
 
 #------------------------------------------------------------------------------
 # Update source.list
@@ -29,27 +28,25 @@ RUN pip install gunicorn numpy pyparsing==2.4.2 python-gitlab kubernetes gitpyth
 
 #------------------------------------------------------------------------------
 # Extract source code 'sostrades-core' and install python dependencies
-RUN git clone https://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@github.com/os-climate/sostrades-core.git /usr/local/sostrades/sources/sostrades-core/
+RUN git clone https://github.com/os-climate/sostrades-core.git /usr/local/sostrades/sources/sostrades-core
 WORKDIR  /usr/local/sostrades/sources/sostrades-core/
-RUN ls
-RUN cat requirements.txt
 RUN pip install -r requirements.txt
 
 #------------------------------------------------------------------------------
 # Extract source code 'sostrades-value-assessment' and install python dependencies
-RUN git clone https://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@github.com/os-climate/sostrades-value-assessment.git /usr/local/sostrades/sources/
+RUN git clone https://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@github.com/os-climate/sostrades-value-assessment.git /usr/local/sostrades/sources/sostrades-value-assessment
 WORKDIR  /usr/local/sostrades/sources/sostrades-value-assessment/
 RUN pip install -r requirements.txt
 
 #------------------------------------------------------------------------------
 # Extract source code 'sosgemseo' and install python dependencies
-RUN git clone https://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@github.com/os-climate/sosgemseo.git /usr/local/sostrades/sources/
+RUN git clone https://gitlab.com/sostrades/gemseo.git /usr/local/sostrades/sources/sosgemseo
 WORKDIR  /usr/local/sostrades/sources/sosgemseo/
 RUN pip install -r requirements.txt
 
 #------------------------------------------------------------------------------
 # Extract source code 'sostrades-webapi' and install python dependencies
-RUN git clone https://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@github.com/os-climate/sostrades-webapi.git /usr/local/sostrades/sources/
+RUN git clone https://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@github.com/os-climate/sostrades-webapi.git /usr/local/sostrades/sources/sostrades-webapi
 WORKDIR  /usr/local/sostrades/sources/sostrades-webapi/
 RUN pip install -r requirements.txt
 
