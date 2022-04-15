@@ -26,12 +26,6 @@ RUN apt-get install -y wget bzip2 git vim xmlsec1 libxmlsec1-dev pkg-config gcc 
 
 RUN pip install gunicorn numpy pyparsing==2.4.2 python-gitlab kubernetes gitpython  pylint==2.4.2
 
-#------------------------------------------------------------------------------
-# Extract source code 'sostrades-core' and install python dependencies
-RUN git clone https://github.com/os-climate/sostrades-core.git /usr/local/sostrades/sources/sostrades-core
-WORKDIR  /usr/local/sostrades/sources/sostrades-core/
-RUN ls
-RUN pip install -r requirements.txt
 
 #------------------------------------------------------------------------------
 # Extract source code 'sostrades-value-assessment' and install python dependencies
@@ -44,6 +38,13 @@ RUN pip install -r requirements.txt
 # Extract source code 'sosgemseo' and install python dependencies
 RUN git clone https://gitlab.com/sostrades/gemseo.git /usr/local/sostrades/sources/sosgemseo
 WORKDIR  /usr/local/sostrades/sources/sosgemseo/
+RUN ls
+RUN pip install -r requirements.txt
+
+#------------------------------------------------------------------------------
+# Extract source code 'sostrades-core' and install python dependencies
+RUN git clone https://github.com/os-climate/sostrades-core.git /usr/local/sostrades/sources/sostrades-core
+WORKDIR  /usr/local/sostrades/sources/sostrades-core/
 RUN ls
 RUN pip install -r requirements.txt
 
