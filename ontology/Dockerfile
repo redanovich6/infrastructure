@@ -1,4 +1,4 @@
-FROM idlvsrv201.eu.airbus.corp/sostrades/python:3.7-stretch
+FROM python:3.7-stretch
 
 LABEL version="1.0" \
               description="SoSTrades - Ontology" \
