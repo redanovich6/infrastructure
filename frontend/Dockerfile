@@ -12,6 +12,7 @@ RUN export NG_CLI_ANALYTICS=off
 #------------------------------------------------------------------------------
 # Install project package and build distribution
 WORKDIR /tmp/node_build/sostrades-webgui/
+RUN ls
 RUN npm install
 RUN node_modules/@angular/cli/bin/ng build --prod
 
