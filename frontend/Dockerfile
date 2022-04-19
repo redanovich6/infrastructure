@@ -16,7 +16,8 @@ RUN ls
 RUN npm install
 RUN node_modules/@angular/cli/bin/ng build --prod
 
-
+RUN ls
+WORKDIR /tmp/node_build/sostrades-webgui/dist/
 #------------------------------------------------------------------------------
 # Stage 2 : Final image buiding with NGINX webserver
 FROM nginx:latest
