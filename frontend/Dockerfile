@@ -20,7 +20,7 @@ RUN ls
 WORKDIR /tmp/node_build/sostrades-webgui/dist/
 #------------------------------------------------------------------------------
 # Stage 2 : Final image buiding with NGINX webserver
-FROM nginx:latest
+FROM nginxinc/nginx-unprivileged
 
 # Transfer website distribution from previous image to this new one
 COPY --from=front_build /tmp/node_build/sostrades-webgui/dist/sos-trades-gui /usr/share/nginx/html
