@@ -28,4 +28,4 @@ COPY --from=front_build /tmp/node_build/sostrades-webgui/dist/sos-trades-gui /us
 # Transfer nginx configuration
 COPY conf/nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 80
+EXPOSE 8080
