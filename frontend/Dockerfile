@@ -20,12 +20,12 @@ RUN ls
 WORKDIR /tmp/node_build/sostrades-webgui/dist/
 #------------------------------------------------------------------------------
 # Stage 2 : Final image buiding with NGINX webserver
-# FROM nginx:latest
+FROM nginx:latest
 
-# # Transfer wbesite distribution from previous image to this new one
-# COPY --from=front_build /tmp/node_build/sostrades-webgui/dist/sos-trades-gui /usr/share/nginx/html
+# Transfer website distribution from previous image to this new one
+COPY --from=front_build /tmp/node_build/sostrades-webgui/dist/sos-trades-gui /usr/share/nginx/html
 
-# # Transfer nginx configuration
-# COPY conf/nginx.conf /etc/nginx/nginx.conf
+# Transfer nginx configuration
+COPY conf/nginx.conf /etc/nginx/nginx.conf
 
-# EXPOSE 80
+EXPOSE 80
