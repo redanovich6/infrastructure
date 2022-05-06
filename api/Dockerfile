@@ -24,6 +24,9 @@ RUN apt-get update -y && apt-get -y upgrade
 RUN apt-get install -y wget bzip2 git vim xmlsec1 libxmlsec1-dev pkg-config gcc default-libmysqlclient-dev build-essential libsasl2-dev python3-dev libldap2-dev libssl-dev procps mpi mpich libblas-dev liblapack-dev unixodbc-dev unixodbc &&\
     apt-get clean
 
+WORKDIR /usr/local/sostrades/sources
+RUN python -m venv sostrades-env 
+RUN source sostrades-env/bin/activate
 RUN pip install gunicorn numpy pyparsing==2.4.2 python-gitlab kubernetes gitpython  pylint==2.4.2
 
 #------------------------------------------------------------------------------
@@ -53,6 +56,7 @@ RUN git clone https://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@github.com/os-cli
 WORKDIR  /usr/local/sostrades/sources/sostrades-webapi/
 RUN ls
 RUN pip install -r requirements.txt
+RUN chmod -r 777 /usr/local/sostrades/sources
 
 EXPOSE 8000
 ENTRYPOINT ["/bin/bash","/startup/commands.sh"]
