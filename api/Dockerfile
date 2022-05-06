@@ -26,7 +26,7 @@ RUN apt-get install -y wget bzip2 git vim xmlsec1 libxmlsec1-dev pkg-config gcc 
 
 WORKDIR /usr/local/sostrades/sources
 RUN python -m venv sostrades-env 
-RUN source sostrades-env/bin/activate
+RUN . ./sostrades-env/bin/activate
 RUN pip install gunicorn numpy pyparsing==2.4.2 python-gitlab kubernetes gitpython  pylint==2.4.2
 
 #------------------------------------------------------------------------------
