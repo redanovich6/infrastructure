@@ -59,7 +59,7 @@ RUN git clone https://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@github.com/os-cli
 WORKDIR  /usr/local/sostrades/sources/sostrades-webapi/
 RUN ls
 RUN pip install -r requirements.txt
-RUN chmod -r 777 /usr/local/sostrades/sources
+RUN chmod -R 777 /usr/local/sostrades/sources
 
 EXPOSE 8000
 ENTRYPOINT ["/bin/bash","/startup/commands.sh"]
