@@ -17,3 +17,19 @@ spec:
 ```
 
 This code Claim Bucket and after you can Accessing to this bucket from outside the cluster. [OPF Documentation](https://www.operate-first.cloud/apps/content/ocs/buckets-external-access.html)
+
+## Expose:
+
+I create a Route on OPF Cluster.
+
+I try to Ask to Cert-Manager to Create an Issuer but I have problems with certification verification. I can't use DNS challenges and HTTP challenge configuration is wierd.
+
+I add an annotation to the route [following this doc](https://www.operate-first.cloud/apps/content/acme/issuing_certificates.html) 
+
+```
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    kubernetes.io/tls-acme: "true"
+```
