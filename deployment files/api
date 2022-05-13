@@ -1,0 +1,138 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: '*'
+    app.openshift.io/vcs-ref: ''
+    app.openshift.io/vcs-uri: 'https://github.com/sostrades-dpeltre/Infrastructure/'
+    deployment.kubernetes.io/revision: '9'
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"api:latest","namespace":"sostrades-namespace"},"fieldPath":"spec.template.spec.containers[?(@.name==\"api\")].image","pause":"false"}]
+    openshift.io/generated-by: OpenShiftWebConsole
+  name: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: api
+        deploymentconfig: api
+    spec:
+      volumes:
+        - name: sostdata
+          persistentVolumeClaim:
+            claimName: sostrades-api-data-pvc
+        - name: sostrades-api-scripts
+          configMap:
+            name: api-sostrades-api-scripts
+            items:
+              - key: commands.sh
+                path: commands.sh
+            defaultMode: 420
+        - name: sostrades-api-conf
+          configMap:
+            name: api-sostrades-api-conf
+            items:
+              - key: sostrades_configuration.json
+                path: sostrades_configuration.json
+            defaultMode: 420
+        - name: sostrades-rsa-key
+          secret:
+            secretName: api-sostrades-api-rsa-key
+            items:
+              - key: private_key.pem
+                path: private_key.pem
+              - key: public_key.pem
+                path: public_key.pem
+            defaultMode: 420
+      containers:
+        - resources:
+            limits:
+              cpu: '25'
+              memory: 20Gi
+            requests:
+              cpu: '2'
+              memory: 2Gi
+          terminationMessagePath: /dev/termination-log
+          name: api
+          env:
+            - name: SOS_TRADES_DATA
+              value: /sostdata
+            - name: SOS_TRADES_REFERENCES
+              value: /sostdata/references
+            - name: SOS_TRADES_SOURCES
+              value: /usr/local/sostrades/sources
+            - name: SOS_TRADES_SERVER_CONFIGURATION
+              value: /usr/local/sostrades/conf/sostrades_configuration.json
+            - name: SOS_TRADES_RSA
+              value: /usr/local/sostrades/conf/rsa-key/
+            - name: K8S_NAMESPACE
+              value: sostrades
+            - name: SOS_TRADES_EXECUTION_STRATEGY
+              value: subprocess
+            - name: SECRET_KEY
+              value: '?~z#_9*UqOFK:`la_4nO&G`a2m;tF!'
+            - name: SQL_ACCOUNT
+              valueFrom:
+                secretKeyRef:
+                  name: api-sostrades-api-db-data
+                  key: username
+            - name: SQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: api-sostrades-api-db-data
+                  key: password
+            - name: LOG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: api-sostrades-api-db-log
+                  key: username
+            - name: LOG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: api-sostrades-api-db-log
+                  key: password
+          ports:
+            - name: api
+              containerPort: 8000
+              protocol: TCP
+            - name: api-data
+              containerPort: 8001
+              protocol: TCP
+            - name: api-message
+              containerPort: 8002
+              protocol: TCP
+            - name: https
+              containerPort: 8003
+              protocol: TCP
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: sostdata
+              mountPath: /sostdata/
+            - name: sostrades-api-scripts
+              mountPath: /startup/
+            - name: sostrades-api-conf
+              mountPath: /usr/local/sostrades/conf/
+            - name: sostrades-rsa-key
+              mountPath: /usr/local/sostrades/conf/rsa-key/
+          terminationMessagePolicy: File
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/sostrades-namespace/api@sha256:6cc6ce0a769234d779c819bc7a39ef1fa9a0f242217dce69ef98012467669ff1
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      imagePullSecrets: []
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+  paused: false
