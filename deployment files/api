@@ -136,3 +136,61 @@ spec:
   revisionHistoryLimit: 10
   progressDeadlineSeconds: 600
   paused: false
+
+
+
+
+---
+
+
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: api
+  namespace: sostrades-namespace
+  labels:
+    app: api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/instance: api
+    app.kubernetes.io/name: api
+    app.kubernetes.io/part-of: api
+  annotations:
+    app.openshift.io/vcs-ref: ''
+    app.openshift.io/vcs-uri: 'https://github.com/sostrades-dpeltre/Infrastructure/'
+    openshift.io/generated-by: OpenShiftWebConsole
+spec:
+  ports:
+    - name: api
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+    - name: api-data
+      protocol: TCP
+      port: 8001
+      targetPort: 8001
+    - name: api-message
+      protocol: TCP
+      port: 8002
+      targetPort: 8002
+    - name: https
+      protocol: TCP
+      port: 8003
+      targetPort: 8003
+    - name: api-v0
+      protocol: TCP
+      port: 8004
+      targetPort: 8004
+  selector:
+    app: api
+    deploymentconfig: api
+  clusterIP: 172.30.29.100
+  clusterIPs:
+    - 172.30.29.100
+  type: ClusterIP
+  sessionAffinity: None
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+status:
+  loadBalancer: {}
