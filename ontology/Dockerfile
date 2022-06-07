@@ -24,6 +24,7 @@ RUN pip install gunicorn pandas
 # Install repository python dependencies
 WORKDIR /usr/local/sostrades/sostrades-ontology
 RUN pip install -r requirements.txt
+RUN chmod -R 777 /usr/local/sostrades
 
 #------------------------------------------------------------------------------
 # Expose API port
