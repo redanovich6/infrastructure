@@ -1,0 +1,151 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"api:latest","namespace":"sostrades"},"fieldPath":"spec.template.spec.containers[?(@.name==\"api\")].image","pause":"false"}]
+    openshift.io/generated-by: OpenShiftWebConsole
+  name: api
+  namespace: sostrades
+  labels:
+    app: api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/instance: api
+    app.kubernetes.io/name: api
+    app.kubernetes.io/part-of: sostrades
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: api
+        deploymentconfig: api
+    spec:
+      volumes:
+        - name: sostrades-api-scripts
+          configMap:
+            name: api-sostrades-api-scripts
+            items:
+              - key: commands.sh
+                path: commands.sh
+            defaultMode: 420
+        - name: sostrades-api-conf
+          configMap:
+            name: api-sostrades-api-conf
+            items:
+              - key: sostrades_configuration.json
+                path: sostrades_configuration.json
+            defaultMode: 420
+        - name: sostrades-rsa-key
+          secret:
+            secretName: api-sostrades-api-rsa-key
+            items:
+              - key: private_key.pem
+                path: private_key.pem
+              - key: public_key.pem
+                path: public_key.pem
+            defaultMode: 420
+        - name: sostrades-github-oauth
+          secret:
+            secretName: githuboauth
+            defaultMode: 420
+        - name: sostrades-api-data-pvc
+          persistentVolumeClaim:
+            claimName: sostrades-api-data-pvc
+      containers:
+        - resources:
+            limits:
+              cpu: '10'
+              memory: 13Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+          terminationMessagePath: /dev/termination-log
+          name: api
+          env:
+            - name: SOS_TRADES_DATA
+              value: /sostdata
+            - name: SOS_TRADES_REFERENCES
+              value: /sostdata/references
+            - name: SOS_TRADES_SOURCES
+              value: /usr/local/sostrades/sources
+            - name: SOS_TRADES_SERVER_CONFIGURATION
+              value: /usr/local/sostrades/conf/sostrades_configuration.json
+            - name: SOS_TRADES_RSA
+              value: /usr/local/sostrades/conf/rsa-key/
+            - name: K8S_NAMESPACE
+              value: sostrades
+            - name: SOS_TRADES_EXECUTION_STRATEGY
+              value: subprocess
+            - name: SECRET_KEY
+              value: '?~z#_9*UqOFK:`la_4nO&G`a2m;tF!'
+            - name: SQL_ACCOUNT
+              valueFrom:
+                secretKeyRef:
+                  name: api-sostrades-api-db-data
+                  key: username
+            - name: SQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: api-sostrades-api-db-data
+                  key: password
+            - name: LOG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: api-sostrades-api-db-log
+                  key: username
+            - name: LOG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: api-sostrades-api-db-log
+                  key: password
+            - name: GITHUB_OAUTH_SETTINGS
+              value: /usr/local/sostrades/conf/github-oauth-settings/settings.json
+            - name: SAML_V2_METADATA_FOLDER
+              value: /usr/local/sostrades/conf/saml-v2/
+            - name: SOS_TRADES_SERVER_MODE
+              value: mono
+          ports:
+            - name: api
+              containerPort: 8000
+              protocol: TCP
+            - name: api-data
+              containerPort: 8001
+              protocol: TCP
+            - name: api-message
+              containerPort: 8002
+              protocol: TCP
+            - name: https
+              containerPort: 8003
+              protocol: TCP
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: sostrades-api-scripts
+              mountPath: /startup/
+            - name: sostrades-api-conf
+              mountPath: /usr/local/sostrades/conf/
+            - name: sostrades-rsa-key
+              mountPath: /usr/local/sostrades/conf/rsa-key/
+            - name: sostrades-github-oauth
+              mountPath: /usr/local/sostrades/conf/github-oauth-settings/
+            - name: sostrades-api-data-pvc
+              mountPath: /sostdata
+          terminationMessagePolicy: File
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/sostrades/api@sha256:f3bfc3bb694fb639e7624cf2be8c13af89fbf24ad216b8bba8eabd69980e0844
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
