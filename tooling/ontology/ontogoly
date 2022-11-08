@@ -1,0 +1,53 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"ontology:latest","namespace":"sostrades"},"fieldPath":"spec.template.spec.containers[?(@.name==\"ontology\")].image","pause":"false"}]
+    openshift.io/generated-by: OpenShiftWebConsole
+  name: ontology
+  namespace: sostrades
+  labels:
+    app: ontology
+    app.kubernetes.io/component: ontology
+    app.kubernetes.io/instance: ontology
+    app.kubernetes.io/name: ontology
+    app.kubernetes.io/part-of: sostrades
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ontology
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ontology
+        deploymentconfig: ontology
+    spec:
+      containers:
+        - name: ontology
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/sostrades/ontology@sha256:867dbb1a8b9e0feda302d021410859f45c7064d34b1361a2b4628b96179ad09d
+          resources:
+            limits:
+              cpu: 1200m
+              memory: 2400Mi
+            requests:
+              cpu: 600m
+              memory: 1200Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
