@@ -2,9 +2,10 @@ kind: StatefulSet
 apiVersion: apps/v1
 metadata:
   name: mysql-sostrades
-  namespace: sostrades-namespace
+  namespace: sostrades
   labels:
     app: mysql-sostrades
+    app.kubernetes.io/part-of: sostrades
 spec:
   replicas: 1
   selector:
@@ -121,41 +122,3 @@ spec:
     rollingUpdate:
       partition: 0
   revisionHistoryLimit: 10
-
-
-
-
-
-
-
----
-
-
-
-
-kind: Service
-apiVersion: v1
-metadata:
-  name: mysql
-  namespace: sostrades-namespace
-  labels:
-    app: mysql-sostrades
-spec:
-  ports:
-    - name: http
-      protocol: TCP
-      port: 3306
-      targetPort: 3306
-  selector:
-    app.kubernetes.io/instance: mysql-sostrades
-    app.kubernetes.io/name: mysql-sostrades
-  clusterIP: 172.30.179.72
-  clusterIPs:
-    - 172.30.179.72
-  type: ClusterIP
-  sessionAffinity: None
-  ipFamilies:
-    - IPv4
-  ipFamilyPolicy: SingleStack
-status:
-  loadBalancer: {}

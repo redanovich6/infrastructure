@@ -1,0 +1,67 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"frontend:latest","namespace":"sostrades"},"fieldPath":"spec.template.spec.containers[?(@.name==\"frontend\")].image","pause":"false"}]
+    openshift.io/generated-by: OpenShiftWebConsole
+  name: frontend
+  namespace: sostrades
+  labels:
+    app: frontend
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/instance: frontend
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: sostrades
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: frontend
+        app.kubernetes.io/component: frontend
+        app.kubernetes.io/name: frontend
+        deploymentconfig: frontend
+    spec:
+      volumes:
+        - name: default-conf
+          configMap:
+            name: frontend-sostrades-frontend-config
+            items:
+              - key: default.conf
+                path: default.conf
+            defaultMode: 420
+      containers:
+        - name: frontend
+          image: >-
+            image-registry.openshift-image-registry.svc:5000/sostrades/frontend@sha256:b677f2d0591598fb1abb8771808d2609e781d927e29a68c1370729462cad03c5
+          resources:
+            limits:
+              cpu: 800m
+              memory: 2Gi
+            requests:
+              cpu: 200m
+              memory: 500Mi
+          volumeMounts:
+            - name: default-conf
+              readOnly: true
+              mountPath: /etc/nginx/conf.d/
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
