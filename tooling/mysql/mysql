@@ -1,0 +1,124 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: mysql-sostrades
+  namespace: sostrades
+  labels:
+    app: mysql-sostrades
+    app.kubernetes.io/part-of: sostrades
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: mysql-sostrades
+      app.kubernetes.io/name: mysql-sostrades
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: mysql-sostrades
+        app.kubernetes.io/name: mysql-sostrades
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: mysql-sostrades-conf
+            defaultMode: 420
+        - name: custom-init-scripts
+          configMap:
+            name: mysql-sostrades-init-scripts
+            defaultMode: 420
+        - name: data
+          persistentVolumeClaim:
+            claimName: mysql-sostrades-pvc
+      containers:
+        - resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 64Mi
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - '-ec'
+                - |
+                  password_aux="${MYSQL_ROOT_PASSWORD:-}"
+                  if [[ -f "${MYSQL_ROOT_PASSWORD_FILE:-}" ]]; then
+                      password_aux=$(cat "$MYSQL_ROOT_PASSWORD_FILE")
+                  fi
+                  mysqladmin status -uroot -p"${password_aux}"
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          name: mysql
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - '-ec'
+                - |
+                  password_aux="${MYSQL_ROOT_PASSWORD:-}"
+                  if [[ -f "${MYSQL_ROOT_PASSWORD_FILE:-}" ]]; then
+                      password_aux=$(cat "$MYSQL_ROOT_PASSWORD_FILE")
+                  fi
+                  mysqladmin status -uroot -p"${password_aux}"
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-sostrades-password
+                  key: mysql-root-password
+            - name: MYSQL_DATABASE
+              value: my_database
+          securityContext: {}
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          startupProbe:
+            exec:
+              command:
+                - /bin/bash
+                - '-ec'
+                - |
+                  password_aux="${MYSQL_ROOT_PASSWORD:-}"
+                  if [[ -f "${MYSQL_ROOT_PASSWORD_FILE:-}" ]]; then
+                      password_aux=$(cat "$MYSQL_ROOT_PASSWORD_FILE")
+                  fi
+                  mysqladmin status -uroot -p"${password_aux}"
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+            - name: custom-init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+            - name: config
+              mountPath: /opt/mysql/conf/my.cnf
+              subPath: my.cnf
+          terminationMessagePolicy: File
+          image: 'mysql:latest'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  serviceName: mysql-sostrades
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
+  revisionHistoryLimit: 10
