@@ -1,0 +1,79 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: api-sostrades-api-validation-scripts
+  labels:
+    app.kubernetes.io/component: sostrades-api-validation
+data:
+  commands.sh: >-
+    ## Update application
+
+
+    echo 'Update SoSTrades application......'
+
+
+    ## Set PythonPath
+
+    ls -d $SOS_TRADES_SOURCES/*/ | tr '\n' ':' > /tmp/pythonpath.txt
+
+    export PYTHONPATH=$(cat /tmp/pythonpath.txt)
+
+    export
+    PYTHONPATH=/usr/local/sostrades/sources/sostrades-core:/usr/local/sostrades/sources/sostrades-value-assessment:/usr/local/sostrades/sources/sostrades-webapi:/usr/local/sostrades/sources/sosgemseo/src:/usr/local/sostrades/sources/witness-energy:/usr/local/sostrades/sources/witness-core
+
+    pip install importlib-metadata==4.13.0
+
+
+    echo $PYTHONPATH
+
+    echo 'Done!'
+
+    cd $SOS_TRADES_SOURCES
+
+    . ./sostrades-env/bin/activate
+
+    cd $SOS_TRADES_SOURCES/sostrades-webapi
+
+
+    flask db upgrade
+
+
+    flask init_process
+
+
+    flask create_standard_user dylan dylan@test.com dylan dylan
+
+    flask change_user_profile dylan -p "Study manager"
+
+
+    gunicorn sos_trades_api.server.split_mode.post_processing_server:app --bind
+    0.0.0.0:8003 --limit-request-line 0 --timeout 300 -D
+    --enable-stdio-inheritance
+
+    ## If tls internal enabled : --certfile=/etc/ssl/private/tls.crt
+    --keyfile=/etc/ssl/private/tls.key
+
+
+    gunicorn --worker-class eventlet sos_trades_api.server.message_server:app
+    --bind 0.0.0.0:8002 --limit-request-line 0 --timeout 300 -D
+    --enable-stdio-inheritance
+
+    ## If tls internal enabled : --certfile=/etc/ssl/private/tls.crt
+    --keyfile=/etc/ssl/private/tls.key
+
+
+
+    gunicorn sos_trades_api.server.split_mode.data_server:app --bind
+    0.0.0.0:8001 --limit-request-line 0 --timeout 300 -D
+    --enable-stdio-inheritance -w 5
+
+    ## If tls internal enabled : --certfile=/etc/ssl/private/tls.crt
+    --keyfile=/etc/ssl/private/tls.key
+
+
+
+    gunicorn sos_trades_api.server.split_mode.main_server:app  --bind
+    0.0.0.0:8000 --limit-request-line 0 --timeout 300
+
+    ## If tls internal enabled : --certfile=/etc/ssl/private/tls.crt
+    --keyfile=/etc/ssl/private/tls.key
