@@ -1,0 +1,30 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mysql-sostrades-init-scripts
+data:
+  my_init_script.sql: >
+    CREATE DATABASE `sostrades-data`;
+
+    CREATE DATABASE `sostrades-log`;
+
+    CREATE DATABASE `sostrades-data-validation`;
+
+    CREATE DATABASE `sostrades-log-validation`;
+
+    CREATE USER 'sostrades'@'%' IDENTIFIED BY 'admin';
+
+    GRANT ALTER, CREATE, DELETE, DROP, INDEX, INSERT, REFERENCES, SELECT, UPDATE
+    ON `sostrades-data`.* TO 'sostrades'@'%';
+
+    GRANT ALTER, CREATE, DELETE, DROP, INDEX, INSERT, REFERENCES, SELECT, UPDATE
+    ON `sostrades-log`.* TO 'sostrades'@'%';
+
+    GRANT ALTER, CREATE, DELETE, DROP, INDEX, INSERT, REFERENCES, SELECT, UPDATE
+    ON `sostrades-data-validation`.* TO 'sostrades'@'%';
+
+    GRANT ALTER, CREATE, DELETE, DROP, INDEX, INSERT, REFERENCES, SELECT, UPDATE
+    ON `sostrades-log-validation`.* TO 'sostrades'@'%';
+
+
+    FLUSH PRIVILEGES;
