@@ -1,0 +1,104 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: frontend-sostrades-frontend-config
+  
+data:
+  default.conf: >
+    # ssl_certificate     /root/certs/sst-fe/tls.crt;
+
+    # ssl_certificate_key /root/certs/sst-fe/tls.key;
+
+    # ssl_ciphers         EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH;
+
+    # ssl_prefer_server_ciphers on;
+
+    # ssl_protocols       TLSv1.2;
+
+    # ssl_session_timeout 5m;
+
+    # ssl_session_cache shared:SSL:50m;
+
+    # ssl_session_tickets off;
+
+    ssl off;
+
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;
+    preload"; add_header Content-Security-Policy "default-src 'self'; img-src
+    'self' data: blob:; font-src 'self'; style-src 'self' 'unsafe-inline'
+    ;script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src
+    'self';frame-ancestors *"; add_header X-XSS-Protection "1; mode=block";
+    server_tokens off;
+
+    server {
+
+        listen       8080  default_server;
+
+        server_name  frontend.sostrades.svc.cluster.local;
+        server_tokens off;
+        client_max_body_size 100M;
+
+        location / {
+            limit_except GET DELETE POST { deny all; }
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+            try_files $uri $uri/ /index.html;
+            expires -1;
+        }
+
+        location /api/main {
+            limit_except GET DELETE POST { deny all; }
+            proxy_set_header X-Forwarded-Host $host:$server_port;
+            proxy_set_header X-Forwarded-Server $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass http://api.sostrades.svc.cluster.local:8000;
+            fastcgi_read_timeout 300;
+            proxy_read_timeout 300;
+        }
+
+        location /api/data {
+            limit_except GET DELETE POST { deny all; }
+            proxy_set_header X-Forwarded-Host $host:$server_port;
+            proxy_set_header X-Forwarded-Server $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass http://api.sostrades.svc.cluster.local:8001;
+            fastcgi_read_timeout 300;
+            proxy_read_timeout 300;
+        }
+
+        # location /saml/acs {
+        #     limit_except GET DELETE POST { deny all; }
+        #     proxy_set_header X-Forwarded-Host $host:$server_port;
+        #     proxy_set_header X-Forwarded-Server $host;
+        #     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        #     proxy_pass :8000;
+        # }
+
+        location /socket.io {
+            limit_except GET DELETE POST { deny all; }
+            proxy_set_header X-Forwarded-Host $host:$server_port;
+            proxy_set_header X-Forwarded-Server $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass http://api.sostrades.svc.cluster.local:8002;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        location /api/post-processing {
+            limit_except GET DELETE POST { deny all; }
+            proxy_set_header X-Forwarded-Host $host:$server_port;
+            proxy_set_header X-Forwarded-Server $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass http://api.sostrades.svc.cluster.local:8003;
+            fastcgi_read_timeout 300;
+            proxy_read_timeout 300;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+
+    }
