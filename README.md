@@ -18,6 +18,7 @@ spec:
 
 This code Claim Bucket and after you can Accessing to this bucket from outside the cluster. [OPF Documentation](https://www.operate-first.cloud/apps/content/ocs/buckets-external-access.html)
 
+
 ## Expose:
 
 I create a Route on OPF Cluster.
