@@ -40,9 +40,9 @@ RUN pip install -r requirements.txt
 
 #------------------------------------------------------------------------------
 # Extract source code 'sostrades-value-assessment' and install python dependencies
-RUN git clone https://github.com/os-climate/sostrades-value-assessment.git /usr/local/sostrades/sources/sostrades-value-assessment
-WORKDIR  /usr/local/sostrades/sources/sostrades-value-assessment/
-RUN pip install -r requirements.txt
+# RUN git clone https://github.com/os-climate/sostrades-value-assessment.git /usr/local/sostrades/sources/sostrades-value-assessment
+# WORKDIR  /usr/local/sostrades/sources/sostrades-value-assessment/
+# RUN pip install -r requirements.txt
 
 #------------------------------------------------------------------------------
 # Extract source code 'sosgemseo' and install python dependencies
